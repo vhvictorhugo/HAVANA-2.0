@@ -1,0 +1,12 @@
+{
+    "raw": {
+        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/checkins_local/checkins_local_{state}.csv",
+        "from_to_category_names": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/general/category_names.csv"
+    },
+    "intermediate": {
+        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/checkins_{state}.parquet",
+        "embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.parquet",
+        "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/user_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.csv"
+    },
+    "processed": {}
+}
