@@ -37,6 +37,20 @@ def cli(
     ctx.obj["h3_resolution"] = h3_resolution
 
 
+@cli.command()
+@click.pass_context
+def generate_model_inputs(ctx):
+    from model_preprocess.job.matrix_generation_for_poi_categorization_job import (
+        MatrixGenerationForPoiCategorizationJob,
+    )
+
+    state = ctx.obj["state"]
+    metadata = ctx.obj["metadata"]
+    logging.info("Starting model inputs generation for {state} state")
+    MatrixGenerationForPoiCategorizationJob().run(state, metadata)
+    logging.info("Successfully generated model inputs")
+
+
 @cli.command
 @click.pass_context
 def generate_user_embeddings(ctx):
@@ -73,7 +87,7 @@ def generate_hex2vec_embeddings(ctx):
 
 @cli.command()
 @click.pass_context
-def preprocess(
+def preprocess_checkins(
     ctx,
 ):
     from preprocess.CheckinsPreProcess import CheckinsPreProcess

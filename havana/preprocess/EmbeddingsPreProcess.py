@@ -49,7 +49,7 @@ class EmbeddingsPreProcess:
         Returns:
             pd.DataFrame: Checkins data
         """
-        return pd.read_parquet(self.metadata["intermediate"]["checkins"].format(state=self.state)).rename(
+        return pd.read_csv(self.metadata["intermediate"]["checkins"].format(state=self.state)).rename(
             columns={"userid": "user_id"}
         )
 
@@ -121,7 +121,7 @@ class EmbeddingsPreProcess:
         """
         (
             user_embeddings_df.to_csv(
-                self.metadata["intermediate"]["user_embeddings"].format(
+                self.metadata["processed"]["user_embeddings"].format(
                     embedder=self.embedder, state=self.state, embeddings_dimension=self.embeddings_dimension
                 ),
                 index=False,

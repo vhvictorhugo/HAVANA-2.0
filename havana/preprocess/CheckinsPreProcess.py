@@ -107,9 +107,7 @@ class CheckinsPreProcess:
         Args:
             checkins_df (pd.DataFrame): Checkins data
         """
-        checkins_df.to_parquet(
-            self.metadata["intermediate"]["checkins"].format(state=self.state),
-        )
+        checkins_df.to_csv(self.metadata["intermediate"]["checkins"].format(state=self.state), index=False)
 
     def run(self) -> None:
         """
