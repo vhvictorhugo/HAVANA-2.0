@@ -167,8 +167,13 @@ cython_debug/
 #.idea/
 
 # Data source files
-data/
 *.parquet
 *.csv
-*.xlsx
+*.xls
 cache/
+*.xml
+*.shx
+*.shp
+*.prj
+*.dbf
+*.cpg
