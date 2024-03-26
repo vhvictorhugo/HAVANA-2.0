@@ -4,9 +4,11 @@
         "from_to_category_names": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/general/category_names.csv"
     },
     "intermediate": {
-        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/checkins_{state}.parquet",
-        "embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.parquet",
-        "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/user_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.csv"
+        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/checkins_{state}.csv",
+        "embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.parquet"
     },
-    "processed": {}
+    "processed": {
+        "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/user_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.csv",
+        "gowalla": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/gowalla/{state}/"
+    }
 }
