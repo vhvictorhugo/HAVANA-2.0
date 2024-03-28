@@ -1,3 +1,4 @@
+import logging
 import time
 
 from model_preprocess.loader.file_loader import FileLoader
@@ -10,8 +11,8 @@ class MatrixGenerationForPoiCategorizationLoader(FileLoader):
                 file = files[i]
                 file_name = files_names[i]
                 self.save_df_to_csv(file, file_name, "a")
-            except OSError as e:
-                print(f"Erro ao salvar {file_name}: {e}")
+            except OSError:
+                logging.exception(f"Erro ao salvar {file_name}")
                 time.sleep(8)
                 file = files[i]
                 file_name = files_names[i]

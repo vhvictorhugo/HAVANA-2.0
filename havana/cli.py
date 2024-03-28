@@ -38,6 +38,23 @@ def cli(
 
 
 @cli.command()
+@click.option("--baseline", help="Flag to execute baseline version", is_flag=True, default=False, show_default=True)
+@click.pass_context
+def model_execute(ctx, baseline):
+    """Execute model for a given state"""
+    from model.job.poi_categorization_job import PoiCategorizationJob
+
+    state = ctx.obj["state"]
+    metadata = ctx.obj["metadata"]
+    embedder = ctx.obj["embedder"]
+    embeddings_dimension = ctx.obj["embeddings_dimension"]
+    logging.info(f"Starting model execution for {state} state")
+    execution_model_message = "Executing baseline version" if baseline else "Executing embeddings version"
+    logging.info(f"{execution_model_message}")
+    PoiCategorizationJob().run(state, baseline, embedder, embeddings_dimension, metadata)
+
+
+@cli.command()
 @click.pass_context
 def generate_model_inputs(ctx):
     """Generate model default inputs for poi categorization"""
@@ -47,7 +64,7 @@ def generate_model_inputs(ctx):
 
     state = ctx.obj["state"]
     metadata = ctx.obj["metadata"]
-    logging.info("Starting model inputs generation for {state} state")
+    logging.info(f"Starting model inputs generation for {state} state")
     MatrixGenerationForPoiCategorizationJob().run(state, metadata)
     logging.info("Successfully generated model inputs")
 

@@ -1,5 +1,7 @@
+import logging
+
 import pandas as pd
-from model.configuration.poi_categorization_configuration import PoICategorizationConfiguration
+from model.configuration.base_poi_categorization_configuration import BasePoiCategorizationConfiguration
 from model.domain.poi_categorization_domain import PoiCategorizationDomain
 from model.extractor.file_extractor import FileExtractor
 from model.loader.poi_categorization_loader import PoiCategorizationLoader
@@ -10,28 +12,29 @@ class PoiCategorizationJob:
         self.file_extractor = FileExtractor()
         self.poi_categorization_domain = PoiCategorizationDomain("gowalla")
         self.poi_categorization_loader = PoiCategorizationLoader()
-        self.poi_categorization_configuration = PoICategorizationConfiguration()
+        self.poi_categorization_configuration = BasePoiCategorizationConfiguration()
 
-    def start(self):
-        base_dir = "gowalla/"
-        adjacency_matrix_filename = "gowalla/adjacency_matrix_not_directed_48_7_categories_US.csv"
-        adjacency_matrix_week_filename = "gowalla/adjacency_matrix_weekday_not_directed_48_7_categories_US.csv"
-        adjacency_matrix_weekend_filename = "gowalla/adjacency_matrix_weekend_not_directed_48_7_categories_US.csv"
-        temporal_matrix_filename = "gowalla/features_matrix_not_directed_48_7_categories_US.csv"
-        temporal_matrix_week_filename = "gowalla/features_matrix_weekday_not_directed_48_7_categories_US.csv"
-        temporal_matrix_weekend_filename = "gowalla/features_matrix_weekend_not_directed_48_7_categories_US.csv"
-        distance_matrix_filename = "gowalla/distance_matrix_not_directed_48_7_categories_US.csv"
-        duration_matrix_filename = "gowalla/duration_matrix_not_directed_48_7_categories_US.csv"
+    def run(self, state, baseline, embedder, embeddings_dimension, metadata):
+        folder = metadata["processed"]["gowalla"].format(state=state)
+        adjacency_matrix_filename = folder + "adjacency_matrix_not_directed_48_7_categories_US.csv"
+        adjacency_matrix_week_filename = folder + "adjacency_matrix_weekday_not_directed_48_7_categories_US.csv"
+        adjacency_matrix_weekend_filename = folder + "adjacency_matrix_weekend_not_directed_48_7_categories_US.csv"
+        temporal_matrix_filename = folder + "features_matrix_not_directed_48_7_categories_US.csv"
+        temporal_matrix_week_filename = folder + "features_matrix_weekday_not_directed_48_7_categories_US.csv"
+        temporal_matrix_weekend_filename = folder + "features_matrix_weekend_not_directed_48_7_categories_US.csv"
+        distance_matrix_filename = folder + "distance_matrix_not_directed_48_7_categories_US.csv"
+        duration_matrix_filename = folder + "duration_matrix_not_directed_48_7_categories_US.csv"
         dataset_name = "gowalla"
         categories_type = "7_categories"
-        location_location_filename = "gowalla/location_location_pmi_matrix_7_categories_US.npz"
-        location_time_filename = "gowalla/location_time_pmi_matrix_7_categories_US.csv"
-        int_to_locationid_filename = "gowalla/int_to_locationid_7_categories_US.csv"
-        state = "Alabama"
+        location_location_filename = folder + "location_location_pmi_matrix_7_categories_US.npz"
+        location_time_filename = folder + "location_time_pmi_matrix_7_categories_US.csv"
+        int_to_locationid_filename = folder + "int_to_locationid_7_categories_US.csv"
         # region embeddings
-        embeddings_dimension = 10
-        user_embeddings_filename = f"gowalla/{state}_user_embeddings_dimension_{embeddings_dimension}.csv"
-        print("\nDataset: ", dataset_name)
+        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(
+            embedder=embedder,
+            state=state,
+            embeddings_dimension=embeddings_dimension,
+        )
 
         max_size_matrices = self.poi_categorization_configuration.MAX_SIZE_MATRICES[1]
         max_size_paths = self.poi_categorization_configuration.MINIMUM_RECORDS[1]
@@ -39,9 +42,7 @@ class PoiCategorizationJob:
         n_replications = self.poi_categorization_configuration.N_REPLICATIONS[1]
         int_to_category = self.poi_categorization_configuration.INT_TO_CATEGORIES[1][dataset_name][categories_type]
 
-        output_dir = ""
         base_report = self.poi_categorization_configuration.REPORT_MODEL[1][categories_type]
-        base_dir = "gowalla/"
 
         # normal matrices
         (
@@ -65,7 +66,7 @@ class PoiCategorizationJob:
         adjacency_weekend_df, temporal_weekend_df = self.poi_categorization_domain.read_matrix(
             adjacency_matrix_weekend_filename, temporal_matrix_weekend_filename
         )
-        print("\nVerificação de matrizes\n")
+        logging.info("Verificação de matrizes")
         self.matrices_verification(
             [
                 adjacency_df,
@@ -79,7 +80,7 @@ class PoiCategorizationJob:
                 user_embeddings_df,
             ]
         )
-        print("\nMatrizes Verificadas com Sucesso!\n")
+        logging.info("Matrizes Verificadas com Sucesso!")
 
         location_location = self.file_extractor.read_npz(location_location_filename)
         location_time = self.file_extractor.read_csv(location_time_filename)
@@ -203,17 +204,29 @@ class PoiCategorizationJob:
             best_model,
             accuracies,
         ) = self.poi_categorization_domain.k_fold_with_replication_train_and_evaluate_model(
-            inputs_folds, n_replications, base_report, output_dir, params
+            inputs_folds, n_replications, base_report, params
         )
 
-        selected_users.to_csv(output_dir + "selected_users.csv", index=False)
-        print("\nbase: ", base_dir)
+        if baseline:
+            selected_users.to_csv(
+                (metadata["processed"]["selected_users"] + f"selected_users_{state}_baseline.csv"), index=False
+            )
+        else:
+            selected_users.to_csv(
+                (
+                    metadata["processed"]["selected_users"]
+                    + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
+                ),
+                index=False,
+            )
+
         base_report = self.poi_categorization_domain.preprocess_report(base_report, int_to_category)
-        self.poi_categorization_loader.save_report_to_csv(output_dir, base_report, n_splits, n_replications, usuarios)
-        print("\nUsuarios processados: ", usuarios)
+        metrics_dir = metadata["processed"]["metrics"]
+        self.poi_categorization_loader.save_report_to_csv(metrics_dir, base_report, n_splits, n_replications)
+        logging.info(f"Usuarios processados: {usuarios}")
 
     def matrices_verification(self, df_list):
         for i in range(1, len(df_list)):
             if len(df_list[i - 1]) != len(df_list[i]):
-                print("\nMatrizes com tamanhos diferentes\n")
+                logging.error("Matrizes com tamanhos diferentes")
                 raise

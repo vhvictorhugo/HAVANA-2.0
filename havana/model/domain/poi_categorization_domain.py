@@ -1,4 +1,5 @@
 import json
+import logging
 
 import numpy as np
 import pandas as pd
@@ -50,13 +51,13 @@ class PoiCategorizationDomain:
                 subset=["user_id"]
             )
             if adjacency_df["user_id"].tolist() != temporal_matrix_df["user_id"].tolist():
-                print("\nMATRIZES DIFERENTES\n")
+                logging.error("MATRIZES DIFERENTES")
                 raise
 
             return (adjacency_df, temporal_matrix_df, distance_matrix_df, duration_matrix_df, user_embeddings_df)
         else:
             if adjacency_df["user_id"].tolist() != temporal_matrix_df["user_id"].tolist():
-                print("\nMATRIZES DIFERENTES\n")
+                logging.error("MATRIZES DIFERENTES")
                 raise
             return adjacency_df, temporal_matrix_df
 
@@ -211,7 +212,7 @@ class PoiCategorizationDomain:
         selected_visited_locations = []
 
         if len(ids) != len(matrix_df):
-            print("\nERRO TAMANHO DA MATRIZ\n")
+            logging.error("ERRO TAMANHO DA MATRIZ")
             exit()
 
         selected_users = []
@@ -310,7 +311,8 @@ class PoiCategorizationDomain:
                     selected_users.append(user_id)
             """"""
         df_selected_users_visited_locations = pd.DataFrame({"id": selected_users, "poi_id": selected_visited_locations})
-        print("\nQuantidade de usuários", len(ids), " Quantidade removidos: ", remove, "\n")
+        logging.info(f"Quantidade de usuários: {len(ids)}")
+        logging.info(f"Quantidade de usuários removidos: {remove}")
         self.features_num_columns = temporal_matrices_list[-1].shape[1]
         matrices_list = np.array(matrices_list)
         location_time_list = np.array(location_time_list)
@@ -502,9 +504,7 @@ class PoiCategorizationDomain:
                 temporal_list_test,
             ), class_weight
 
-    def k_fold_with_replication_train_and_evaluate_model(
-        self, inputs_folds, n_replications, base_report, output_dir, params
-    ):
+    def k_fold_with_replication_train_and_evaluate_model(self, inputs_folds, n_replications, base_report, params):
         folds_histories = []
         folds_reports = []
         models = []
@@ -516,10 +516,10 @@ class PoiCategorizationDomain:
             fold_weekend = inputs_folds["weekend"]["folds"][i]
             histories = []
             reports = []
-            print(f"FOLD {i}")
+            logging.info(f"FOLD {i}")
             for _ in range(n_replications):
                 history, report, model, accuracy = self.train_and_evaluate_model(
-                    i, fold, fold_week, fold_weekend, output_dir, params
+                    i, fold, fold_week, fold_weekend, params
                 )
 
                 base_report = self._add_location_report(base_report, report)
@@ -534,7 +534,7 @@ class PoiCategorizationDomain:
 
         return folds_histories, base_report, best_model, accuracies
 
-    def train_and_evaluate_model(self, fold_number, fold, fold_week, fold_weekend, output_dir, params, model=None):
+    def train_and_evaluate_model(self, fold_number, fold, fold_week, fold_weekend, params, model=None):
         (
             adjacency_train,
             y_train,
@@ -571,41 +571,13 @@ class PoiCategorizationDomain:
         ) = fold_weekend
 
         max_total = 0
-        max_user = -1
 
         for i in range(len(adjacency_test)):
             user_total = np.sum(adjacency_test[i])
             if user_total > max_total:
                 max_total = user_total
-                max_user = i
 
         model = GNNUS_BaseModel(params).build(seed=params["seed"][fold_number])
-
-        user_index = max_user
-        self.heatmap_matrices(
-            str(fold_number),
-            [
-                adjacency_test[user_index],
-                adjacency_test_week[user_index],
-                adjacency_test_weekend[user_index],
-                temporal_test[user_index],
-                temporal_test_week[user_index],
-                temporal_test_weekend[user_index],
-                location_time_test[user_index],
-                location_location_test[user_index],
-            ],
-            [
-                "Adjacency",
-                "Adjacency (weekday)",
-                "Adjacency (weekend)",
-                "Temporal",
-                "Temporal (weekday)",
-                "Temporal (weekend)",
-                "Location_time",
-                "Location_location",
-            ],
-            output_dir,
-        )
 
         input_train = [
             adjacency_train,
@@ -620,8 +592,6 @@ class PoiCategorizationDomain:
             location_location_train,
             user_embeddings_train,
         ]
-        for i in input_train:
-            print(i.shape)
 
         input_test = [
             adjacency_test,
@@ -644,7 +614,7 @@ class PoiCategorizationDomain:
         compare4 = y_test_week == y_test_weekend
 
         if not (compare1.all() and compare2.all() and compare3.all() and compare4.all()):
-            print("\nListas diferentes de categorias\n")
+            logging.error("Listas diferentes de categorias")
             exit()
 
         model.compile(
@@ -679,12 +649,6 @@ class PoiCategorizationDomain:
         report = skm.classification_report(y_test, y_predict_location, output_dict=True)
 
         return h, report, model, report["accuracy"]
-
-    def heatmap_matrices(self, fold_number, matrices, names, output_dir):
-        for matrix, name in zip(matrices, names):
-            self.poi_categorization_loader.heatmap(
-                output_dir, matrix, name.replace(" ", "_") + "_" + fold_number, name, (10, 10), True
-            )
 
     def _add_location_report(self, location_report, report):
         for l_key in report:

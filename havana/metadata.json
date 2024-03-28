@@ -9,6 +9,8 @@
     },
     "processed": {
         "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/user_embeddings/{embedder}/{state}_{embeddings_dimension}_dimension.csv",
-        "gowalla": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/gowalla/{state}/"
+        "gowalla": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/gowalla/{state}/",
+        "selected_users": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/selected_users/",
+        "metrics": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/metrics_last_execute/"
     }
 }

@@ -1,3 +1,4 @@
+import logging
 import math
 import os
 import statistics as st
@@ -162,7 +163,7 @@ class MatrixGenerationForPoiCategorizationDomain:
         visited_location_ids_real = user_checkin[locationid_column].unique().tolist()
 
         if len(adjacency_matrix) < 2:
-            print("\nUsuário com poucas categorias diferentes visitadas")
+            logging.info("Usuário com poucas categorias diferentes visitadas")
             return pd.DataFrame(
                 {
                     "adjacency": ["vazio"],
@@ -258,7 +259,7 @@ class MatrixGenerationForPoiCategorizationDomain:
         self.count_usuarios += 1
         if self.count_usuarios > self.anterior + 100:
             self.anterior = self.count_usuarios
-            print("\nNúmero de usuários: ", self.count_usuarios)
+            logging.info(f"Número de usuários: {self.count_usuarios}")
         return pd.DataFrame(
             {
                 "adjacency": ["vazio"],
@@ -287,8 +288,8 @@ class MatrixGenerationForPoiCategorizationDomain:
         for user_id in users_checkins[userid_column].unique():
             if cont % 100 == 0:
                 end = time.time()
-                print("\nusuário: ", cont)
-                print("\nduração: ", (end - init) / 60)
+                logging.info(f"usuário: {cont}")
+                logging.info(f"duração: {(end - init) / 60}")
 
             cont += 1
             users_checkins_sorted = users_checkins[users_checkins[userid_column] == user_id].sort_values(
@@ -309,7 +310,7 @@ class MatrixGenerationForPoiCategorizationDomain:
 
         init = time.time()
         end = time.time()
-        print("\ncalculou os totais", (end - init) / 60)
+        logging.info(f"calculou os totais {(end - init) / 60}")
 
     def _create_LT_matrix(self, users_checinks, locationid_column, datetime_column, locationid_to_int):
         locations = users_checinks[locationid_column].tolist()
@@ -355,7 +356,6 @@ class MatrixGenerationForPoiCategorizationDomain:
     ):
         # shuffle
         users_checkin = users_checkin.sample(frac=1, random_state=1).reset_index(drop=True)
-        print("\n", users_checkin)
         users_checkin = users_checkin.dropna(
             subset=[userid_column, category_column, locationid_column, datetime_column]
         )
@@ -389,7 +389,7 @@ class MatrixGenerationForPoiCategorizationDomain:
         keys = list(locationid_to_int.keys())
         values = list(locationid_to_int.values())
         self._create_LT_matrix(users_checkin, locationid_column, datetime_column, locationid_to_int)
-        print("\nterminou LT")
+        logging.info("terminou LT")
         lt = pd.DataFrame(self.LT, columns=[str(i) for i in range(self.LT.shape[1])])
         self.matrix_generation_for_poi_categorization_loader.save_df_to_csv(
             lt, location_time_omi_matrix_filename.replace("8_cat", "7_cat")
@@ -402,7 +402,7 @@ class MatrixGenerationForPoiCategorizationDomain:
         self._create_location_coocurrency_matrix(
             users_checkin, userid_column, datetime_column, locationid_column, locationid_to_int
         )
-        print("\nterminou LL")
+        logging.info("terminou LL")
         self.matrix_generation_for_poi_categorization_loader.save_sparse_matrix_to_npz(
             sparse.csr_matrix(self.LL), location_location_pmi_matrix_filename.replace("8_c", "7_c")
         )
@@ -420,9 +420,9 @@ class MatrixGenerationForPoiCategorizationDomain:
                 files_names,
             )
         )
-        print("\nFIM")
+        logging.info("FIM")
         end = time.time()
-        print("\nDuração: ", (end - start) / 60)
+        logging.info(f"Duração: {(end - start) / 60}")
 
     def remove_gps_pois_that_dont_have_categories(self, categories, adjacency_matrix, features_matrix):
         indexes_filtered_pois = []

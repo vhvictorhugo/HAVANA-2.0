@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -19,7 +20,6 @@ class MatrixGenerationForPoiCategorizationJob:
         self.poi_categorization_configuration = BasePoiCategorizationConfiguration()
 
     def run(self, state, metadata):
-        # users_checkin_filename = "gowalla/checkins.csv"
         users_checkin_filename = metadata["intermediate"]["checkins"].format(state=state)
         adjacency_matrix_base_filename = "adjacency_matrix"
         features_matrix_base_filename = "features_matrix"
@@ -28,7 +28,7 @@ class MatrixGenerationForPoiCategorizationJob:
         dataset_name = "gowalla"
         categories_type = "7_categories"
         country = "United States"
-        print("\nDataset: ", dataset_name)
+        logging.info(f"Dataset: {dataset_name}")
 
         convert_country = {"Brazil": "BR", "BR": "BR", "United States": "US"}
         hour_file = "48_"
@@ -69,8 +69,6 @@ class MatrixGenerationForPoiCategorizationJob:
             longitude_column: "float64",
         }
 
-        print(dtypes_columns)
-
         users_checkin = self.file_extractor.read_csv(users_checkin_filename, dtypes_columns).query(
             country_column + " == '" + country + "'"
         )
@@ -85,20 +83,13 @@ class MatrixGenerationForPoiCategorizationJob:
 
             category_column = category_column + "_id"
             users_checkin[category_column] = np.array(categories_int)
-            print("\n\n", users_checkin[category_column], "\n\n", users_checkin[category_column].unique())
 
-        print("\n----- verificação -----")
-        print("\nPais: ", users_checkin[country_column].unique().tolist())
-
-        # data
-
-        users_checkin[datetime_column] = pd.to_datetime(users_checkin[datetime_column], infer_datetime_format=True)
+        users_checkin[datetime_column] = pd.to_datetime(users_checkin[datetime_column])
         users_checkin[category_column] = users_checkin[category_column].astype("int")
 
         """
         Generate matrixes for each user
         """
-        # folder = 'gowalla/'
         folder = metadata["processed"]["gowalla"].format(state=state)
         self.folder_generation(folder)
         country = convert_country[country]
@@ -210,6 +201,9 @@ class MatrixGenerationForPoiCategorizationJob:
             longitude_column,
             datetime_column,
         )
+
+        logging.info(f"Matrices generated for {state} state")
+        logging.info(f"Path: {folder}")
 
     def folder_generation(self, folder):
         Path(folder).mkdir(parents=True, exist_ok=True)
