@@ -40,6 +40,7 @@ def cli(
 @cli.command()
 @click.pass_context
 def generate_model_inputs(ctx):
+    """Generate model default inputs for poi categorization"""
     from model_preprocess.job.matrix_generation_for_poi_categorization_job import (
         MatrixGenerationForPoiCategorizationJob,
     )
@@ -54,7 +55,8 @@ def generate_model_inputs(ctx):
 @cli.command
 @click.pass_context
 def generate_user_embeddings(ctx):
-    from preprocess.EmbeddingsPreProcess import EmbeddingsPreProcess
+    """Generate user embeddings for a given state and dimension"""
+    from havana.embeddings.EmbeddingsPreProcess import EmbeddingsPreProcess
 
     state = ctx.obj["state"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
@@ -72,7 +74,8 @@ def generate_user_embeddings(ctx):
 @cli.command
 @click.pass_context
 def generate_hex2vec_embeddings(ctx):
-    from preprocess.Hex2Vec import Hex2Vec
+    """Generate Hex2Vec embeddings for a given state and dimension"""
+    from havana.embeddings.Hex2Vec import Hex2Vec
 
     state = ctx.obj["state"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
@@ -90,6 +93,7 @@ def generate_hex2vec_embeddings(ctx):
 def preprocess_checkins(
     ctx,
 ):
+    """Preprocess checkins data for a given state"""
     from preprocess.CheckinsPreProcess import CheckinsPreProcess
 
     state = ctx.obj["state"]
