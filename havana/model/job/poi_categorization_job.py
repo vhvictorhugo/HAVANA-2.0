@@ -208,17 +208,16 @@ class PoiCategorizationJob:
         )
 
         if baseline:
-            selected_users.to_csv(
-                (metadata["processed"]["selected_users"] + f"selected_users_{state}_baseline.csv"), index=False
-            )
+            path = metadata["processed"]["selected_users"] + f"selected_users_{state}_baseline.csv"
         else:
-            selected_users.to_csv(
-                (
-                    metadata["processed"]["selected_users"]
-                    + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
-                ),
-                index=False,
+            path = (
+                metadata["processed"]["selected_users"]
+                + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
             )
+
+        logging.info("Salvando usuários selecionados")
+        selected_users.to_csv(path, index=False)
+        logging.info(f"Path: {path}")
 
         base_report = self.poi_categorization_domain.preprocess_report(base_report, int_to_category)
         metrics_dir = metadata["processed"]["metrics"]

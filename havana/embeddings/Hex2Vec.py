@@ -1,3 +1,4 @@
+import logging
 import warnings
 
 import pandas as pd
@@ -37,11 +38,12 @@ class Hex2Vec:
         Args:
             embeddings (pd.DataFrame): Embeddings data
         """
-        embeddings.to_parquet(
-            self.metadata["intermediate"]["embeddings"].format(
-                embedder="hex2vec", state=self.state, embeddings_dimension=self.embeddings_dimension
-            )
+        path = self.metadata["intermediate"]["embeddings"].format(
+            embedder="hex2vec", state=self.state, embeddings_dimension=self.embeddings_dimension
         )
+        logging.info("Writing hex2vec embeddings")
+        embeddings.to_parquet(path)
+        logging.info(f"Path: {path}")
 
     def run(self) -> None:
         """

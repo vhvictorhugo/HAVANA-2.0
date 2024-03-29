@@ -1,4 +1,5 @@
 import json
+import logging
 
 import h3
 import pandas as pd
@@ -119,15 +120,12 @@ class EmbeddingsPreProcess:
         Args:
             user_embeddings_df (pd.DataFrame): User embeddings data
         """
-        (
-            user_embeddings_df.to_csv(
-                self.metadata["processed"]["user_embeddings"].format(
-                    embedder=self.embedder, state=self.state, embeddings_dimension=self.embeddings_dimension
-                ),
-                index=False,
-                sep=",",
-            )
+        path = self.metadata["processed"]["user_embeddings"].format(
+            embedder=self.embedder, state=self.state, embeddings_dimension=self.embeddings_dimension
         )
+        logging.info("Writing user embeddings to processed data")
+        user_embeddings_df.to_csv(path, index=False, sep=",")
+        logging.info(f"Path: {path}")
 
     def run(self):
         """

@@ -1,3 +1,4 @@
+import logging
 from pathlib import Path
 
 import numpy as np
@@ -83,4 +84,6 @@ class PoiCategorizationLoader:
 
     def save_metrics_to_csv(self, metrics_dict, output_dir, filename):
         df = pd.DataFrame(metrics_dict)
+        logging.info(f"Saving {filename} metrics to csv")
         df.to_csv(output_dir + f"{filename}.csv", index=False)
+        logging.info(f"Path: {output_dir + filename}.csv")

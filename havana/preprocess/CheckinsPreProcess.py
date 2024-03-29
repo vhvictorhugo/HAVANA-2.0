@@ -1,3 +1,5 @@
+import logging
+
 import pandas as pd
 
 
@@ -107,7 +109,10 @@ class CheckinsPreProcess:
         Args:
             checkins_df (pd.DataFrame): Checkins data
         """
-        checkins_df.to_csv(self.metadata["intermediate"]["checkins"].format(state=self.state), index=False)
+        path = self.metadata["intermediate"]["checkins"].format(state=self.state)
+        logging.info("Writing checkins to intermediate data")
+        checkins_df.to_csv(path, index=False)
+        logging.info(f"Path: {path}")
 
     def run(self) -> None:
         """
