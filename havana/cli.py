@@ -38,9 +38,8 @@ def cli(
 
 
 @cli.command()
-@click.option("--baseline", help="Flag to execute baseline version", is_flag=True, default=False, show_default=True)
 @click.pass_context
-def model_execute(ctx, baseline):
+def model(ctx):
     """Execute model for a given state"""
     from model.job.poi_categorization_job import PoiCategorizationJob
 
@@ -49,14 +48,12 @@ def model_execute(ctx, baseline):
     embedder = ctx.obj["embedder"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     logging.info(f"Starting model execution for {state} state")
-    execution_model_message = "Executing baseline version" if baseline else "Executing embeddings version"
-    logging.info(f"{execution_model_message}")
-    PoiCategorizationJob().run(state, baseline, embedder, embeddings_dimension, metadata)
+    PoiCategorizationJob().run(state, embedder, embeddings_dimension, metadata)
 
 
 @cli.command()
 @click.pass_context
-def generate_model_inputs(ctx):
+def model_inputs(ctx):
     """Generate model default inputs for poi categorization"""
     from model_preprocess.job.matrix_generation_for_poi_categorization_job import (
         MatrixGenerationForPoiCategorizationJob,
@@ -71,7 +68,7 @@ def generate_model_inputs(ctx):
 
 @cli.command
 @click.pass_context
-def generate_user_embeddings(ctx):
+def user_embeddings(ctx):
     """Generate user embeddings for a given state and dimension"""
     from havana.embeddings.EmbeddingsPreProcess import EmbeddingsPreProcess
 
@@ -90,7 +87,7 @@ def generate_user_embeddings(ctx):
 
 @cli.command
 @click.pass_context
-def generate_hex2vec_embeddings(ctx):
+def hex2vec_embeddings(ctx):
     """Generate Hex2Vec embeddings for a given state and dimension"""
     from havana.embeddings.Hex2Vec import Hex2Vec
 
