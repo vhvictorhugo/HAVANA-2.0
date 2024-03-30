@@ -579,34 +579,60 @@ class PoiCategorizationDomain:
 
         model = GNNUS_BaseModel(params).build(seed=params["seed"][fold_number])
 
-        input_train = [
-            adjacency_train,
-            adjacency_week_train,
-            adjacency_train_weekend,
-            temporal_train,
-            temporal_train_week,
-            temporal_train_weekend,
-            distance_train,
-            duration_train,
-            location_time_train,
-            location_location_train,
-            user_embeddings_train,
-        ]
+        if params["baseline"]:
+            input_train = [
+                adjacency_train,
+                adjacency_week_train,
+                adjacency_train_weekend,
+                temporal_train,
+                temporal_train_week,
+                temporal_train_weekend,
+                distance_train,
+                duration_train,
+                location_time_train,
+                location_location_train,
+            ]
 
-        input_test = [
-            adjacency_test,
-            adjacency_test_week,
-            adjacency_test_weekend,
-            temporal_test,
-            temporal_test_week,
-            temporal_test_weekend,
-            distance_test,
-            duration_test,
-            location_time_test,
-            location_location_test,
-            user_embeddings_test,
-        ]
+            input_test = [
+                adjacency_test,
+                adjacency_test_week,
+                adjacency_test_weekend,
+                temporal_test,
+                temporal_test_week,
+                temporal_test_weekend,
+                distance_test,
+                duration_test,
+                location_time_test,
+                location_location_test,
+            ]
+        else:
+            input_train = [
+                adjacency_train,
+                adjacency_week_train,
+                adjacency_train_weekend,
+                temporal_train,
+                temporal_train_week,
+                temporal_train_weekend,
+                distance_train,
+                duration_train,
+                location_time_train,
+                location_location_train,
+                user_embeddings_train,
+            ]
 
+            input_test = [
+                adjacency_test,
+                adjacency_test_week,
+                adjacency_test_weekend,
+                temporal_test,
+                temporal_test_week,
+                temporal_test_weekend,
+                distance_test,
+                duration_test,
+                location_time_test,
+                location_location_test,
+                user_embeddings_test,
+            ]
         # verifying whether categories arrays are equal
         compare1 = y_train == y_train_week
         compare2 = y_train_week == y_train_weekend

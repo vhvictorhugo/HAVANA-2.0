@@ -38,8 +38,9 @@ def cli(
 
 
 @cli.command()
+@click.option("--baseline", help="Flag to execute baseline version", is_flag=True, default=False, show_default=True)
 @click.pass_context
-def model(ctx):
+def model(ctx, baseline):
     """Execute model for a given state"""
     from model.job.poi_categorization_job import PoiCategorizationJob
 
@@ -48,7 +49,9 @@ def model(ctx):
     embedder = ctx.obj["embedder"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     logging.info(f"Starting model execution for {state} state")
-    PoiCategorizationJob().run(state, embedder, embeddings_dimension, metadata)
+    execution_model_message = "Executing baseline version" if baseline else "Executing embeddings version"
+    logging.info(f"{execution_model_message}")
+    PoiCategorizationJob().run(state, baseline, embedder, embeddings_dimension, metadata)
 
 
 @cli.command()

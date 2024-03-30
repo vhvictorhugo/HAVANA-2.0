@@ -15,7 +15,9 @@ class GNNUS_BaseModel:
         self.dropout_skip = params["dropout_skip"]
         self.dropout = params["dropout"]
         self.num_pois = 3
-        self.embeddings_dimension = params["embeddings_dimension"]
+        self.baseline = params["baseline"]
+        if not self.baseline:
+            self.embeddings_dimension = params["embeddings_dimension"]
 
     def build(self, seed=None):
         if seed is not None:
@@ -33,7 +35,8 @@ class GNNUS_BaseModel:
         A_week_input = Input((self.max_size_matrices, self.max_size_matrices))
         Location_time_input = Input((self.max_size_matrices, self.features_num_columns))
         Location_location_input = Input((self.max_size_matrices, self.max_size_matrices))
-        User_embeddings_input = Input((self.max_size_matrices, self.embeddings_dimension))
+        if not self.baseline:
+            User_embeddings_input = Input((self.max_size_matrices, self.embeddings_dimension))
 
         out_temporal = ARMAConv(
             20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
@@ -41,11 +44,12 @@ class GNNUS_BaseModel:
         out_temporal = Dropout(self.dropout)(out_temporal)
         out_temporal = ARMAConv(20, kernel_regularizer=l2_reg)([out_temporal, A_input])
 
-        out_embeddings = ARMAConv(
-            20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
-        )([User_embeddings_input, A_input])
-        out_embeddings = Dropout(self.dropout)(out_embeddings)
-        out_embeddings = ARMAConv(20, kernel_regularizer=l2_reg)([out_embeddings, A_input])
+        if not self.baseline:
+            out_embeddings = ARMAConv(
+                20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
+            )([User_embeddings_input, A_input])
+            out_embeddings = Dropout(self.dropout)(out_embeddings)
+            out_embeddings = ARMAConv(20, kernel_regularizer=l2_reg)([out_embeddings, A_input])
 
         out_week_temporal = ARMAConv(
             20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
@@ -88,30 +92,54 @@ class GNNUS_BaseModel:
         out_dense = tf.Variable(2.0) * out_location_location + tf.Variable(2.0) * out_location_time
         out_dense = Dense(20, kernel_regularizer=l2_reg)(out_dense)
 
-        omega_1 = (
-            tf.Variable(1.0) * out_temporal
-            + tf.Variable(1.0) * out_week_temporal
-            + tf.Variable(1.0) * out_weekend_temporal
-            + tf.Variable(1.0) * out_distance
-            + tf.Variable(1.0) * out_duration
-            + tf.Variable(1.0) * out_embeddings
-        )
+        if not self.baseline:
+            omega_1 = (
+                tf.Variable(1.0) * out_temporal
+                + tf.Variable(1.0) * out_week_temporal
+                + tf.Variable(1.0) * out_weekend_temporal
+                + tf.Variable(1.0) * out_distance
+                + tf.Variable(1.0) * out_duration
+                + tf.Variable(1.0) * out_embeddings
+            )
+        else:
+            omega_1 = (
+                tf.Variable(1.0) * out_temporal
+                + tf.Variable(1.0) * out_week_temporal
+                + tf.Variable(1.0) * out_weekend_temporal
+                + tf.Variable(1.0) * out_distance
+                + tf.Variable(1.0) * out_duration
+            )
+
         omega_1 = Dense(20, kernel_regularizer=l2_reg)(omega_1)
         omega_1 = tf.Variable(1.0) * out_dense + tf.Variable(1.0) * omega_1
 
-        concat_ys_omega_1 = Concatenate()(
-            [
-                out_temporal,
-                out_week_temporal,
-                out_weekend_temporal,
-                out_distance,
-                out_duration,
-                out_location_location,
-                out_location_time,
-                omega_1,
-                out_embeddings,
-            ]
-        )
+        if not self.baseline:
+            concat_ys_omega_1 = Concatenate()(
+                [
+                    out_temporal,
+                    out_week_temporal,
+                    out_weekend_temporal,
+                    out_distance,
+                    out_duration,
+                    out_location_location,
+                    out_location_time,
+                    omega_1,
+                    out_embeddings,
+                ]
+            )
+        else:
+            concat_ys_omega_1 = Concatenate()(
+                [
+                    out_temporal,
+                    out_week_temporal,
+                    out_weekend_temporal,
+                    out_distance,
+                    out_duration,
+                    out_location_location,
+                    out_location_time,
+                    omega_1,
+                ]
+            )
 
         out_temporal2 = GATConv(
             20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
@@ -119,11 +147,12 @@ class GNNUS_BaseModel:
         out_temporal2 = Dropout(self.dropout)(out_temporal2)
         out_temporal2 = GATConv(20, kernel_regularizer=l2_reg)([out_temporal2, A_input])
 
-        out_embeddings2 = GATConv(
-            20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
-        )([User_embeddings_input, A_input])
-        out_embeddings2 = Dropout(self.dropout)(out_embeddings2)
-        out_embeddings2 = GATConv(20, kernel_regularizer=l2_reg)([out_embeddings2, A_input])
+        if not self.baseline:
+            out_embeddings2 = GATConv(
+                20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
+            )([User_embeddings_input, A_input])
+            out_embeddings2 = Dropout(self.dropout)(out_embeddings2)
+            out_embeddings2 = GATConv(20, kernel_regularizer=l2_reg)([out_embeddings2, A_input])
 
         out_week_temporal2 = GATConv(
             20, kernel_regularizer=l2_reg, share_weights=self.share_weights, dropout_rate=self.dropout_skip
@@ -166,30 +195,53 @@ class GNNUS_BaseModel:
         out_dense2 = tf.Variable(2.0) * out_location_location2 + tf.Variable(2.0) * out_location_time2
         out_dense2 = Dense(20, kernel_regularizer=l2_reg)(out_dense2)
 
-        omega_2 = (
-            tf.Variable(1.0) * out_temporal2
-            + tf.Variable(1.0) * out_week_temporal2
-            + tf.Variable(1.0) * out_weekend_temporal2
-            + tf.Variable(1.0) * out_distance2
-            + tf.Variable(1.0) * out_duration2
-            + tf.Variable(1.0) * out_embeddings2
-        )
+        if not self.baseline:
+            omega_2 = (
+                tf.Variable(1.0) * out_temporal2
+                + tf.Variable(1.0) * out_week_temporal2
+                + tf.Variable(1.0) * out_weekend_temporal2
+                + tf.Variable(1.0) * out_distance2
+                + tf.Variable(1.0) * out_duration2
+                + tf.Variable(1.0) * out_embeddings2
+            )
+        else:
+            omega_2 = (
+                tf.Variable(1.0) * out_temporal2
+                + tf.Variable(1.0) * out_week_temporal2
+                + tf.Variable(1.0) * out_weekend_temporal2
+                + tf.Variable(1.0) * out_distance2
+                + tf.Variable(1.0) * out_duration2
+            )
         omega_2 = Dense(20, kernel_regularizer=l2_reg)(omega_2)
         omega_2 = tf.Variable(1.0) * out_dense2 + tf.Variable(1.0) * omega_2
 
-        concat_ys_omega_2 = Concatenate()(
-            [
-                out_temporal2,
-                out_week_temporal2,
-                out_weekend_temporal2,
-                out_distance2,
-                out_duration2,
-                out_location_location2,
-                out_location_time2,
-                omega_2,
-                out_embeddings2,
-            ]
-        )
+        if not self.baseline:
+            concat_ys_omega_2 = Concatenate()(
+                [
+                    out_temporal2,
+                    out_week_temporal2,
+                    out_weekend_temporal2,
+                    out_distance2,
+                    out_duration2,
+                    out_location_location2,
+                    out_location_time2,
+                    omega_2,
+                    out_embeddings2,
+                ]
+            )
+        else:
+            concat_ys_omega_2 = Concatenate()(
+                [
+                    out_temporal2,
+                    out_week_temporal2,
+                    out_weekend_temporal2,
+                    out_distance2,
+                    out_duration2,
+                    out_location_location2,
+                    out_location_time2,
+                    omega_2,
+                ]
+            )
 
         concat_ys_omega_2 = Dense(50)(concat_ys_omega_2)
         concat_ys_omega_1 = Dense(50)(concat_ys_omega_1)
@@ -200,8 +252,8 @@ class GNNUS_BaseModel:
         out = Dense(50, activation="relu")(out)
         out = Dense(self.num_classes, activation="softmax")(out)
 
-        model = Model(
-            inputs=[
+        if not self.baseline:
+            inputs = [
                 A_input,
                 A_week_input,
                 A_weekend_input,
@@ -213,8 +265,21 @@ class GNNUS_BaseModel:
                 Location_time_input,
                 Location_location_input,
                 User_embeddings_input,
-            ],
-            outputs=[out],
-        )
+            ]
+        else:
+            inputs = [
+                A_input,
+                A_week_input,
+                A_weekend_input,
+                Temporal_input,
+                Temporal_week_input,
+                Temporal_weekend_input,
+                Distance_input,
+                Duration_input,
+                Location_time_input,
+                Location_location_input,
+            ]
+
+        model = Model(inputs=inputs, outputs=[out])
 
         return model

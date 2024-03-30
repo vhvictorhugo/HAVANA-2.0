@@ -14,7 +14,7 @@ class PoiCategorizationJob:
         self.poi_categorization_loader = PoiCategorizationLoader()
         self.poi_categorization_configuration = BasePoiCategorizationConfiguration()
 
-    def run(self, state, embedder, embeddings_dimension, metadata):
+    def run(self, state, baseline, embedder, embeddings_dimension, metadata):
         folder = metadata["processed"]["gowalla"].format(state=state)
         adjacency_matrix_filename = folder + "adjacency_matrix_not_directed_48_7_categories_US.csv"
         adjacency_matrix_week_filename = folder + "adjacency_matrix_weekday_not_directed_48_7_categories_US.csv"
@@ -196,6 +196,7 @@ class PoiCategorizationJob:
             "learning_rate": 0.001,
             "state": state,
             "embeddings_dimension": embeddings_dimension,
+            "baseline": baseline,
         }
 
         (
@@ -207,7 +208,13 @@ class PoiCategorizationJob:
             inputs_folds, n_replications, base_report, params
         )
 
-        path = metadata["processed"]["selected_users"] + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
+        if baseline:
+            path = metadata["processed"]["selected_users"] + f"selected_users_{state}_baseline.csv"
+        else:
+            path = (
+                metadata["processed"]["selected_users"]
+                + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
+            )
 
         logging.info("Salvando usuários selecionados")
         selected_users.to_csv(path, index=False)
