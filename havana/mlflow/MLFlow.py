@@ -22,7 +22,7 @@ class MLFlow:
             mlflow.log_params(params)
             for category in category_columns:
                 # category log
-                mlflow.log_metric(f"recal_{category}", recall_df[category].mean())
+                mlflow.log_metric(f"recall_{category}", recall_df[category].mean())
                 mlflow.log_metric(f"precision_{category}", precision_df[category].mean())
                 mlflow.log_metric(f"f1_score_{category}", f1_score_df[category].mean())
             # general log
