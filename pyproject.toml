@@ -14,7 +14,7 @@ packages = [
 havana = "havana.cli:main"
 
 [tool.poetry.dependencies]
-python = ">=3.10,<3.12"
+python = "3.10.14"
 click = "^8.1.7"
 srai = {extras = ["osm"], version = "^0.7.0"}
 ipykernel = "^6.29.3"
