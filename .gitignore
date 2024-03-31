@@ -178,3 +178,9 @@ cache/
 *.dbf
 *.cpg
 *.npz
+
+# MLFlow
+mlruns/
+
+# SRAI
+lightning_logs/

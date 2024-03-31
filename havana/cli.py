@@ -38,6 +38,23 @@ def cli(
 
 
 @cli.command()
+@click.pass_context
+def mlflow(ctx):
+    """
+    Execute mlflow for a given state and dimension
+    NOTE: If you want to evaluate a baseline execution, set the embeddings_dimension cli parameter to 0
+    """
+    from havana.mlflow.MLFlow import MLFlow
+
+    state = ctx.obj["state"]
+    embeddings_dimension = ctx.obj["embeddings_dimension"]
+    metadata = ctx.obj["metadata"]
+    logging.info(f"Starting mlflow execution for {state} state and {embeddings_dimension} dimensions")
+    MLFlow(state, embeddings_dimension, metadata).run()
+    logging.info("Successfully executed mlflow")
+
+
+@cli.command()
 @click.option("--baseline", help="Flag to execute baseline version", is_flag=True, default=False, show_default=True)
 @click.pass_context
 def model(ctx, baseline):
