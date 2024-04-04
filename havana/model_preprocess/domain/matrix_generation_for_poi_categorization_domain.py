@@ -7,12 +7,15 @@ import time
 import numpy as np
 import pandas as pd
 import scipy.sparse as sparse
-from model_preprocess.configuration.base_poi_categorization_configuration import BasePoiCategorizationConfiguration
-from model_preprocess.configuration.weekday import Weekday
-from model_preprocess.loader.matrix_generation_for_poi_categorization_loarder import (
+
+from havana.model_preprocess.configuration.base_poi_categorization_configuration import (
+    BasePoiCategorizationConfiguration,
+)
+from havana.model_preprocess.configuration.weekday import Weekday
+from havana.model_preprocess.loader.matrix_generation_for_poi_categorization_loarder import (
     MatrixGenerationForPoiCategorizationLoader,
 )
-from model_preprocess.util.geospatial_utils import points_distance
+from havana.model_preprocess.util.geospatial_utils import points_distance
 
 
 class MatrixGenerationForPoiCategorizationDomain:

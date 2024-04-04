@@ -1,7 +1,7 @@
 import logging
 import time
 
-from model_preprocess.loader.file_loader import FileLoader
+from havana.model_preprocess.loader.file_loader import FileLoader
 
 
 class MatrixGenerationForPoiCategorizationLoader(FileLoader):

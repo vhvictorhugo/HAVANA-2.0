@@ -4,13 +4,11 @@ import click
 
 
 @click.group()
-@click.option("--metapath", default="metadata.json", help="Path to metadata file", show_default=True)
-@click.option("--state", help="State to execute the pipeline")
-@click.option("--embedder", default="hex2vec", show_default=True, help="Embedder to generate embeddings")
-@click.option(
-    "--embeddings_dimension", default=10, show_default=True, help="Embeddings dimensions to generate region embeddings"
-)
-@click.option("--h3_resolution", default=9, show_default=True, help="H3 resolution for region embeddings")
+@click.option("--metapath", default="metadata.json", help="Path to metadata file", show_default=True, type=click.Path())
+@click.option("--state", required=True, help="State to execute the pipeline", type=str)
+@click.option("--embedder", help="Embedder to generate embeddings", type=str)
+@click.option("--embeddings_dimension", help="Embeddings dimensions to generate region embeddings", type=int)
+@click.option("--h3_resolution", help="H3 resolution for region embeddings", type=int)
 @click.pass_context
 def cli(
     ctx,
@@ -47,41 +45,53 @@ def mlflow(ctx):
     from havana.mlflow.MLFlow import MLFlow
 
     state = ctx.obj["state"]
+    embedder = ctx.obj["embedder"]
+    h3_resolution = ctx.obj["h3_resolution"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     metadata = ctx.obj["metadata"]
-    logging.info(f"Starting mlflow execution for {state} state and {embeddings_dimension} dimensions")
-    MLFlow(state, embeddings_dimension, metadata).run()
+    logging.info(f"Starting mlflow execution for {state} state.")
+    logging.info(f"MLFlow Params: {embedder} embedder, {h3_resolution} resolution, {embeddings_dimension} dimensions")
+    MLFlow(state, embedder, h3_resolution, embeddings_dimension, metadata).run()
     logging.info("Successfully executed mlflow")
 
 
 @cli.command()
-@click.option("--baseline", help="Flag to execute baseline version", is_flag=True, default=False, show_default=True)
 @click.pass_context
-def model(ctx, baseline):
+def model(ctx):
     """Execute model for a given state"""
-    from model.job.poi_categorization_job import PoiCategorizationJob
+    from havana.model.job.poi_categorization_job import PoiCategorizationJob
 
     state = ctx.obj["state"]
     metadata = ctx.obj["metadata"]
     embedder = ctx.obj["embedder"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
+    h3_resolution = ctx.obj["h3_resolution"]
     logging.info(f"Starting model execution for {state} state")
-    execution_model_message = "Executing baseline version" if baseline else "Executing embeddings version"
-    logging.info(f"{execution_model_message}")
-    PoiCategorizationJob().run(state, baseline, embedder, embeddings_dimension, metadata)
+    execution_model_message = (
+        "Executing baseline version" if (embedder == "baseline") else "Executing embeddings version"
+    )
+    logging.info(f"{execution_model_message} for {state} state.")
+    logging.info(f"Model Params: {embedder} embedder, {h3_resolution} resolution, {embeddings_dimension} dimensions")
+    PoiCategorizationJob().run(
+        state=state,
+        embedder=embedder,
+        embeddings_dimension=embeddings_dimension,
+        h3_resolution=h3_resolution,
+        metadata=metadata,
+    )
 
 
 @cli.command()
 @click.pass_context
 def model_inputs(ctx):
     """Generate model default inputs for poi categorization"""
-    from model_preprocess.job.matrix_generation_for_poi_categorization_job import (
+    from havana.model_preprocess.job.matrix_generation_for_poi_categorization_job import (
         MatrixGenerationForPoiCategorizationJob,
     )
 
     state = ctx.obj["state"]
     metadata = ctx.obj["metadata"]
-    logging.info(f"Starting model inputs generation for {state} state")
+    logging.info(f"Starting model default inputs generation for {state} state")
     MatrixGenerationForPoiCategorizationJob().run(state, metadata)
     logging.info("Successfully generated model inputs")
 
@@ -95,19 +105,20 @@ def user_embeddings(ctx):
     state = ctx.obj["state"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     embedder = ctx.obj["embedder"]
+    h3_resolution = ctx.obj["h3_resolution"]
     metadata = ctx.obj["metadata"]
 
+    logging.info(f"Generating user embeddings for {state} state.")
     logging.info(
-        f"Generating user embeddings for {state} state with {embeddings_dimension} dimensions using {embedder}"
+        f"User Embeddings Params: {embedder} embedder, {h3_resolution} resolution, {embeddings_dimension} dimensions"
     )
-
-    EmbeddingsPreProcess(state, embeddings_dimension, embedder, metadata).run()
+    EmbeddingsPreProcess(state, embeddings_dimension, embedder, h3_resolution, metadata).run()
     logging.info("Successfully generated user embeddings")
 
 
 @cli.command
 @click.pass_context
-def hex2vec_embeddings(ctx):
+def hex2vec(ctx):
     """Generate Hex2Vec embeddings for a given state and dimension"""
     from havana.embeddings.Hex2Vec import Hex2Vec
 
@@ -116,23 +127,23 @@ def hex2vec_embeddings(ctx):
     h3_resolution = ctx.obj["h3_resolution"]
     metadata = ctx.obj["metadata"]
 
-    logging.info(f"Generating Hex2Vec embeddings to {state} state with {embeddings_dimension} dimensions")
-
+    logging.info(f"Generating Hex2Vec embeddings to {state} state.")
+    logging.info(f"Hex2Vec Params: {h3_resolution} resolution, {embeddings_dimension} dimensions")
     Hex2Vec(state, embeddings_dimension, h3_resolution, metadata).run()
     logging.info("Successfully generated Hex2Vec embeddings")
 
 
 @cli.command()
 @click.pass_context
-def preprocess_checkins(
+def preprocess(
     ctx,
 ):
     """Preprocess checkins data for a given state"""
-    from preprocess.CheckinsPreProcess import CheckinsPreProcess
+    from havana.preprocess.CheckinsPreProcess import CheckinsPreProcess
 
     state = ctx.obj["state"]
     metadata = ctx.obj["metadata"]
-    logging.info("Starting preprocessing")
+    logging.info("Starting checkins preprocessing")
     logging.info(f"Preprocessing for {state} state")
     (CheckinsPreProcess(state, metadata).run())
     logging.info("Successfully preprocessed checkins data")

@@ -1,10 +1,12 @@
 import logging
+from pathlib import Path
 
 import pandas as pd
-from model.configuration.base_poi_categorization_configuration import BasePoiCategorizationConfiguration
-from model.domain.poi_categorization_domain import PoiCategorizationDomain
-from model.extractor.file_extractor import FileExtractor
-from model.loader.poi_categorization_loader import PoiCategorizationLoader
+
+from havana.model.configuration.base_poi_categorization_configuration import BasePoiCategorizationConfiguration
+from havana.model.domain.poi_categorization_domain import PoiCategorizationDomain
+from havana.model.extractor.file_extractor import FileExtractor
+from havana.model.loader.poi_categorization_loader import PoiCategorizationLoader
 
 
 class PoiCategorizationJob:
@@ -14,7 +16,7 @@ class PoiCategorizationJob:
         self.poi_categorization_loader = PoiCategorizationLoader()
         self.poi_categorization_configuration = BasePoiCategorizationConfiguration()
 
-    def run(self, state, baseline, embedder, embeddings_dimension, metadata):
+    def run(self, state, embedder, embeddings_dimension, h3_resolution, metadata):
         folder = metadata["processed"]["gowalla"].format(state=state)
         adjacency_matrix_filename = folder + "adjacency_matrix_not_directed_48_7_categories_US.csv"
         adjacency_matrix_week_filename = folder + "adjacency_matrix_weekday_not_directed_48_7_categories_US.csv"
@@ -30,10 +32,10 @@ class PoiCategorizationJob:
         location_time_filename = folder + "location_time_pmi_matrix_7_categories_US.csv"
         int_to_locationid_filename = folder + "int_to_locationid_7_categories_US.csv"
         # region embeddings
-        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(
-            embedder=embedder,
-            state=state,
-            embeddings_dimension=embeddings_dimension,
+        # TODO: tirar o hardcode do embedder, o ideal é não ler esse arquivo caso a execução seja baseline
+        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(embedder="hex2vec", state=state)
+        user_embeddings_filename = (
+            user_embeddings_filename + f"{embeddings_dimension}_dimension_{h3_resolution}_resolution.csv"
         )
 
         max_size_matrices = self.poi_categorization_configuration.MAX_SIZE_MATRICES[1]
@@ -196,7 +198,7 @@ class PoiCategorizationJob:
             "learning_rate": 0.001,
             "state": state,
             "embeddings_dimension": embeddings_dimension,
-            "baseline": baseline,
+            "baseline": (embedder == "baseline"),
         }
 
         (
@@ -208,21 +210,29 @@ class PoiCategorizationJob:
             inputs_folds, n_replications, base_report, params
         )
 
-        if baseline:
-            path = metadata["processed"]["selected_users"] + f"selected_users_{state}_baseline.csv"
+        selected_users_path = metadata["processed"]["selected_users"]
+        Path(selected_users_path).mkdir(parents=True, exist_ok=True)
+
+        if embedder == "baseline":
+            selected_users_path = selected_users_path + f"{state}_baseline.csv"
         else:
-            path = (
-                metadata["processed"]["selected_users"]
-                + f"selected_users_{state}_{embedder}_{embeddings_dimension}.csv"
+            selected_users_path = (
+                selected_users_path
+                + f"{state}_{embedder}_{embeddings_dimension}_dimension_{h3_resolution}_resolution.csv"
             )
 
         logging.info("Salvando usuários selecionados")
-        selected_users.to_csv(path, index=False)
-        logging.info(f"Path: {path}")
+        selected_users.to_csv(selected_users_path, index=False)
+        logging.info(f"Path: {selected_users_path}")
 
         base_report = self.poi_categorization_domain.preprocess_report(base_report, int_to_category)
         metrics_dir = metadata["processed"]["metrics"]
-        self.poi_categorization_loader.save_report_to_csv(metrics_dir, base_report, n_splits, n_replications)
+        if embedder == "baseline":
+            metrics_dir = metrics_dir.format(embedder="baseline", state=state)
+        else:
+            metrics_dir = metrics_dir.format(embedder=embedder, state=state)
+        Path(metrics_dir).mkdir(parents=True, exist_ok=True)
+        self.poi_categorization_loader.save_report_to_csv(metrics_dir, base_report, embeddings_dimension, h3_resolution)
         logging.info(f"Usuarios processados: {usuarios}")
 
     def matrices_verification(self, df_list):

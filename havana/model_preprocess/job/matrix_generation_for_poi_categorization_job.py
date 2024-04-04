@@ -3,14 +3,17 @@ from pathlib import Path
 
 import numpy as np
 import pandas as pd
-from model_preprocess.configuration.base_poi_categorization_configuration import BasePoiCategorizationConfiguration
-from model_preprocess.configuration.matrix_generation_for_poi_categorization_configuration import (
+
+from havana.model_preprocess.configuration.base_poi_categorization_configuration import (
+    BasePoiCategorizationConfiguration,
+)
+from havana.model_preprocess.configuration.matrix_generation_for_poi_categorization_configuration import (
     MatrixGenerationForPoiCategorizationConfiguration,
 )
-from model_preprocess.domain.matrix_generation_for_poi_categorization_domain import (
+from havana.model_preprocess.domain.matrix_generation_for_poi_categorization_domain import (
     MatrixGenerationForPoiCategorizationDomain,
 )
-from model_preprocess.extractor.file_extractor import FileExtractor
+from havana.model_preprocess.extractor.file_extractor import FileExtractor
 
 
 class MatrixGenerationForPoiCategorizationJob:
@@ -20,7 +23,8 @@ class MatrixGenerationForPoiCategorizationJob:
         self.poi_categorization_configuration = BasePoiCategorizationConfiguration()
 
     def run(self, state, metadata):
-        users_checkin_filename = metadata["intermediate"]["checkins"].format(state=state)
+        users_checkin_filename = metadata["intermediate"]["checkins"]
+        users_checkin_filename = users_checkin_filename + f"{state}.csv"
         adjacency_matrix_base_filename = "adjacency_matrix"
         features_matrix_base_filename = "features_matrix"
         distance_matrix_base_filename = "distance_matrix"

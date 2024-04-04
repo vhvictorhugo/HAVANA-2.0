@@ -1,5 +1,6 @@
 import logging
 import warnings
+from pathlib import Path
 
 import pandas as pd
 from pytorch_lightning import seed_everything
@@ -38,9 +39,9 @@ class Hex2Vec:
         Args:
             embeddings (pd.DataFrame): Embeddings data
         """
-        path = self.metadata["intermediate"]["embeddings"].format(
-            embedder="hex2vec", state=self.state, embeddings_dimension=self.embeddings_dimension
-        )
+        path = self.metadata["intermediate"]["hex2vec"].format(embedder="hex2vec", state=self.state)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.parquet"
         logging.info("Writing hex2vec embeddings")
         embeddings.to_parquet(path)
         logging.info(f"Path: {path}")
@@ -65,20 +66,20 @@ class Hex2Vec:
             "shop": True,
             "aeroway": ["aerodrome", "gate", "terminal", "hangar"],
             "public_transport": "station",
-            "community_centre": "youth_centre",
+            # "community_centre": "youth_centre",
             "amenity": [
                 "community_centre",
                 "school",
                 "library",
                 "place_of_worship",
-                "social_club",
+                # "social_club",
                 "bus_station",
                 "ferry_terminal",
                 "bureau_de_change",
                 "car_rental",
                 "cinema",
                 "theatre",
-                "concert_hall",
+                # "concert_hall",
                 "bar",
                 "restaurant",
                 "cafe",
@@ -90,9 +91,9 @@ class Hex2Vec:
                 "bbq",
                 "nightclub",
                 "pub",
-                "lounge",
-                "karaoke_box",
-                "music_venue",
+                # "lounge",
+                # "karaoke_box",
+                # "music_venue",
                 "casino",
             ],
             "place": "square",
@@ -124,11 +125,7 @@ class Hex2Vec:
                 "picnic_site",
             ],
             "waterway": "waterfall",
-            "natural": [
-                "water",
-                "beach",
-                "wood",
-            ],
+            "natural": ["water", "beach", "wood"],
         }
 
         loader = OSMOnlineLoader()

@@ -7,16 +7,17 @@ import sklearn.metrics as skm
 import spektral as sk
 import spektral.layers
 import tensorflow as tf
-from model.extractor.file_extractor import FileExtractor
-from model.loader.file_loader import FileLoader
-from model.loader.poi_categorization_loader import PoiCategorizationLoader
-from model.model.gnn_base_model_for_transfer_learning import GNNUS_BaseModel
-from model.utils.nn_preprocessing import one_hot_decoding_predicted, split_graph, top_k_rows, top_k_rows_order
 from sklearn.model_selection import KFold
 from sklearn.preprocessing import MinMaxScaler
 from tensorflow.keras import utils as np_utils
 from tensorflow.keras.callbacks import EarlyStopping
 from tensorflow.keras.optimizers import Adam
+
+from havana.model.extractor.file_extractor import FileExtractor
+from havana.model.loader.file_loader import FileLoader
+from havana.model.loader.poi_categorization_loader import PoiCategorizationLoader
+from havana.model.model.gnn_base_model_for_transfer_learning import GNNUS_BaseModel
+from havana.model.utils.nn_preprocessing import one_hot_decoding_predicted, split_graph, top_k_rows, top_k_rows_order
 
 
 class PoiCategorizationDomain:
@@ -60,9 +61,6 @@ class PoiCategorizationDomain:
                 logging.error("MATRIZES DIFERENTES")
                 raise
             return adjacency_df, temporal_matrix_df
-
-    def read_users_metrics(self, filename):
-        return self.file_extractor.read_csv(filename).drop_duplicates(subset=["user_id"])
 
     def _poi_gnn_resize_adjacency_and_category_matrices(
         self, user_matrix, user_matrix_week, user_matrix_weekend, user_category, max_size_matrices, dataset_name

@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import pandas as pd
 
@@ -109,7 +110,9 @@ class CheckinsPreProcess:
         Args:
             checkins_df (pd.DataFrame): Checkins data
         """
-        path = self.metadata["intermediate"]["checkins"].format(state=self.state)
+        path = self.metadata["intermediate"]["checkins"]
+        Path(path).mkdir(parents=True, exist_ok=True)
+        path = path + f"{self.state}.csv"
         logging.info("Writing checkins to intermediate data")
         checkins_df.to_csv(path, index=False)
         logging.info(f"Path: {path}")

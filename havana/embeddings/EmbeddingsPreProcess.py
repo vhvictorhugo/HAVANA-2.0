@@ -1,5 +1,6 @@
 import json
 import logging
+from pathlib import Path
 
 import h3
 import pandas as pd
@@ -24,10 +25,11 @@ class EmbeddingsPreProcess:
         run: Preprocess users embeddings data
     """
 
-    def __init__(self, state: str, embeddings_dimension: int, embedder: str, metadata: dict):
+    def __init__(self, state: str, embeddings_dimension: int, embedder: str, h3_resolution: int, metadata: dict):
         self.state = state
         self.embeddings_dimension = embeddings_dimension
         self.embedder = embedder
+        self.h3_resolution = h3_resolution
         self.metadata = metadata
 
     def _read_embeddings(self) -> pd.DataFrame:
@@ -37,11 +39,9 @@ class EmbeddingsPreProcess:
         Returns:
             pd.DataFrame: Embeddings data
         """
-        return pd.read_parquet(
-            self.metadata["intermediate"]["embeddings"].format(
-                embedder=self.embedder, state=self.state, embeddings_dimension=self.embeddings_dimension
-            )
-        )
+        path = self.metadata["intermediate"][self.embedder].format(embedder=self.embedder, state=self.state)
+        path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.parquet"
+        return pd.read_parquet(path)
 
     def _read_checkins(self) -> pd.DataFrame:
         """
@@ -50,9 +50,9 @@ class EmbeddingsPreProcess:
         Returns:
             pd.DataFrame: Checkins data
         """
-        return pd.read_csv(self.metadata["intermediate"]["checkins"].format(state=self.state)).rename(
-            columns={"userid": "user_id"}
-        )
+        path = self.metadata["intermediate"]["checkins"]
+        path = path + f"{self.state}.csv"
+        return pd.read_csv(path).rename(columns={"userid": "user_id"})
 
     def _generate_h3_cell(self, row: pd.Series) -> str:
         """
@@ -66,9 +66,8 @@ class EmbeddingsPreProcess:
         """
         lat = row["latitude"]
         lon = row["longitude"]
-        resolution = 9
 
-        h3_cell = h3.latlng_to_cell(lat, lon, resolution)
+        h3_cell = h3.latlng_to_cell(lat, lon, self.h3_resolution)
         return h3_cell
 
     def _criar_dicionario(self, n):
@@ -120,9 +119,9 @@ class EmbeddingsPreProcess:
         Args:
             user_embeddings_df (pd.DataFrame): User embeddings data
         """
-        path = self.metadata["processed"]["user_embeddings"].format(
-            embedder=self.embedder, state=self.state, embeddings_dimension=self.embeddings_dimension
-        )
+        path = self.metadata["processed"]["user_embeddings"].format(embedder=self.embedder, state=self.state)
+        Path(path).mkdir(parents=True, exist_ok=True)
+        path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.csv"
         logging.info("Writing user embeddings to processed data")
         user_embeddings_df.to_csv(path, index=False, sep=",")
         logging.info(f"Path: {path}")
