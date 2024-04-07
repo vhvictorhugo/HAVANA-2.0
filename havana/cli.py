@@ -118,19 +118,30 @@ def user_embeddings(ctx):
 
 @cli.command
 @click.pass_context
-def hex2vec(ctx):
-    """Generate Hex2Vec embeddings for a given state and dimension"""
+def embedder(ctx):
+    """Generate embeddings for a given embedder, state, dimension and h3 resolution"""
     from havana.embeddings.Hex2Vec import Hex2Vec
 
+    embedder = ctx.obj["embedder"]
     state = ctx.obj["state"]
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     h3_resolution = ctx.obj["h3_resolution"]
     metadata = ctx.obj["metadata"]
 
-    logging.info(f"Generating Hex2Vec embeddings to {state} state.")
-    logging.info(f"Hex2Vec Params: {h3_resolution} resolution, {embeddings_dimension} dimensions")
-    Hex2Vec(state, embeddings_dimension, h3_resolution, metadata).run()
-    logging.info("Successfully generated Hex2Vec embeddings")
+    logging.info(f"Generating {embedder.upper()} embeddings to {state} state.")
+    logging.info(f"{embedder.upper()} Params: {h3_resolution} resolution, {embeddings_dimension} dimensions")
+    (
+        Hex2Vec(
+            state=state,
+            embedder_name=embedder,
+            embeddings_dimension=embeddings_dimension,
+            h3_resolution=h3_resolution,
+            metadata=metadata,
+        ).run()
+        if embedder == "hex2vec"
+        else None
+    )
+    logging.info(f"Successfully generated {embedder.upper()} embeddings")
 
 
 @cli.command()
