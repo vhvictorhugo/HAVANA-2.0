@@ -39,7 +39,7 @@ class EmbeddingsPreProcess:
         Returns:
             pd.DataFrame: Embeddings data
         """
-        path = self.metadata["intermediate"][self.embedder].format(embedder=self.embedder, state=self.state)
+        path = self.metadata["intermediate"]["embedder"].format(embedder=self.embedder, state=self.state)
         path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.parquet"
         return pd.read_parquet(path)
 
