@@ -42,7 +42,7 @@ class Embedder(ABC):
         Args:
             embeddings (pd.DataFrame): Embeddings data
         """
-        path = self.metadata["intermediate"]["embedder"].format(embedder=self.embedder_name, state=self.state)
+        path = self.metadata["intermediate"]["embeddings"].format(embedder=self.embedder_name, state=self.state)
         Path(path).mkdir(parents=True, exist_ok=True)
         path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.parquet"
         logging.info(f"Writing {self.embedder_name.upper()} embeddings")
