@@ -21,7 +21,7 @@ class EmbeddingsPreProcess:
         _read_checkins: Read checkins data
         _generate_h3_cell: Generate H3 cell from latitude and longitude
         _generate_user_embeddings: Generate user embeddings from checkins embeddings
-        _write_user_embeddings: Write user embeddings to intermediate data
+        _write_user_embeddings: Write user embeddings to processed data
         run: Preprocess users embeddings data
     """
 
@@ -39,7 +39,7 @@ class EmbeddingsPreProcess:
         Returns:
             pd.DataFrame: Embeddings data
         """
-        path = self.metadata["intermediate"]["embedder"].format(embedder=self.embedder, state=self.state)
+        path = self.metadata["intermediate"]["embeddings"].format(embedder=self.embedder, state=self.state)
         path = path + f"{self.embeddings_dimension}_dimension_{self.h3_resolution}_resolution.parquet"
         return pd.read_parquet(path)
 
@@ -114,7 +114,7 @@ class EmbeddingsPreProcess:
 
     def _write_user_embeddings(self, user_embeddings_df: pd.DataFrame) -> None:
         """
-        Write user embeddings to intermediate data
+        Write user embeddings to processed data
 
         Args:
             user_embeddings_df (pd.DataFrame): User embeddings data

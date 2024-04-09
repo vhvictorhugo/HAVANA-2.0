@@ -5,7 +5,7 @@
     },
     "intermediate": {
         "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/checkins/",
-        "hex2vec": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}/"
+        "embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}/"
     },
     "processed": {
         "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/user_embeddings/{embedder}/{state}/",
