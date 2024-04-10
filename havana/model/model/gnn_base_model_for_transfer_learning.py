@@ -1,6 +1,6 @@
 import tensorflow as tf
 from spektral.layers.convolutional import ARMAConv, GATConv
-from tensorflow.keras.layers import Attention, Concatenate, Dense, Dropout, Input
+from tensorflow.keras.layers import Concatenate, Dense, Dropout, Input, MultiHeadAttention
 from tensorflow.keras.models import Model
 from tensorflow.keras.regularizers import l2
 
@@ -203,11 +203,9 @@ class GNNUS_BaseModel:
                 + tf.Variable(1.0) * out_embeddings2
                 + tf.Variable(1.0) * out_embeddings3
             )
-            # TODO: confirmar se o trecho abaixo é necessário
             omega_3 = Dense(20, kernel_regularizer=l2_reg)(omega_3)
             omega_3 = tf.Variable(1.0) * out_dense + tf.Variable(1.0) * omega_3
 
-            # TODO: confirmar a forma do concatenate
             concat_ys_omega_3 = Concatenate()(
                 [
                     out_embeddings,
@@ -242,11 +240,9 @@ class GNNUS_BaseModel:
                 + tf.Variable(1.0) * out_embeddings5
                 + tf.Variable(1.0) * out_embeddings6
             )
-            # TODO: confirmar se o trecho abaixo é necessário
             omega_4 = Dense(20, kernel_regularizer=l2_reg)(omega_4)
             omega_4 = tf.Variable(1.0) * out_dense2 + tf.Variable(1.0) * omega_4
 
-            # TODO: confirmar a forma do concatenate
             concat_ys_omega_4 = Concatenate()(
                 [
                     out_embeddings4,
@@ -257,14 +253,12 @@ class GNNUS_BaseModel:
             )
             concat_ys_omega_4 = Dense(50)(concat_ys_omega_4)
 
-        # TODO: confirmar a forma do concatenate
         c1 = (
             Concatenate()([concat_ys_omega_1, concat_ys_omega_2])
             if self.baseline
             else Concatenate()([concat_ys_omega_1, concat_ys_omega_2, concat_ys_omega_3, concat_ys_omega_4])
         )
-        # TODO: confirmar camada de atenção
-        att = Attention()([c1, c1])
+        att = MultiHeadAttention(num_heads=2, key_dim=c1.shape[2])(c1, c1)
         out = Concatenate()([c1, att])
         out = Dense(50, activation="relu")(out)
         out = Dense(self.num_classes, activation="softmax")(out)
