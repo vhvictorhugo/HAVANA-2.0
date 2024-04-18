@@ -120,6 +120,7 @@ def user_embeddings(ctx):
 @click.pass_context
 def embedder(ctx):
     """Generate embeddings for a given embedder, state, dimension and h3 resolution"""
+    from havana.embeddings.GeoVex import GeoVex
     from havana.embeddings.Hex2Vec import Hex2Vec
 
     embedder = ctx.obj["embedder"]
@@ -130,17 +131,20 @@ def embedder(ctx):
 
     logging.info(f"Generating {embedder.upper()} embeddings to {state} state.")
     logging.info(f"{embedder.upper()} Params: {h3_resolution} resolution, {embeddings_dimension} dimensions")
-    (
-        Hex2Vec(
-            state=state,
-            embedder_name=embedder,
-            embeddings_dimension=embeddings_dimension,
-            h3_resolution=h3_resolution,
-            metadata=metadata,
-        ).run()
-        if embedder == "hex2vec"
-        else None
-    )
+
+    embedder_params = {
+        "state": state,
+        "embeddings_dimension": embeddings_dimension,
+        "h3_resolution": h3_resolution,
+        "metadata": metadata,
+    }
+
+    if embedder == "hex2vec":
+        embedder_instance = Hex2Vec(**embedder_params)
+    elif embedder == "geovex":
+        embedder_instance = GeoVex(**embedder_params)
+
+    embedder_instance.run()
     logging.info(f"Successfully generated {embedder.upper()} embeddings")
 
 
