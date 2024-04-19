@@ -16,7 +16,6 @@ class Hex2Vec(Embedder):
 
     Args:
         state (str): State to generate embeddings
-        embedder_name (str): Embedder name
         embeddings_dimension (int): Embeddings dimensions
         h3_resolution (int): H3 resolution
         metadata (dict): Metadata dictionary
@@ -25,8 +24,14 @@ class Hex2Vec(Embedder):
         run: Run embeddings generation
     """
 
-    def __init__(self, state: str, embedder_name: str, embeddings_dimension: int, h3_resolution: int, metadata: dict):
-        super().__init__(state, embedder_name, embeddings_dimension, h3_resolution, metadata)
+    def __init__(self, state: str, embeddings_dimension: int, h3_resolution: int, metadata: dict):
+        super().__init__(
+            state=state,
+            embedder_name="hex2vec",
+            embeddings_dimension=embeddings_dimension,
+            h3_resolution=h3_resolution,
+            metadata=metadata,
+        )
 
     def run(self) -> None:
         """

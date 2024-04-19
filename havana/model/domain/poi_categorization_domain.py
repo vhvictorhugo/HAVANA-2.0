@@ -17,6 +17,8 @@ from havana.model.extractor.file_extractor import FileExtractor
 from havana.model.loader.file_loader import FileLoader
 from havana.model.loader.poi_categorization_loader import PoiCategorizationLoader
 from havana.model.model.gnn_base_model_for_transfer_learning import GNNUS_BaseModel
+
+# from havana.model.model.pgcnn import GNNUS_BaseModel
 from havana.model.utils.nn_preprocessing import one_hot_decoding_predicted, split_graph, top_k_rows, top_k_rows_order
 
 
