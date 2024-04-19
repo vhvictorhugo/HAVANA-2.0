@@ -89,18 +89,6 @@ class GNNUS_BaseModel:
             out_embeddings = Dropout(self.dropout)(out_embeddings)
             out_embeddings = ARMAConv(self.num_classes, activation="softmax")([out_embeddings, A_input])
 
-            out_embeddings2 = ARMAConv(20, activation="elu", gcn_activation="gelu")(
-                [User_embeddings_input, A_week_input]
-            )
-            out_embeddings2 = Dropout(self.dropout)(out_embeddings2)
-            out_embeddings2 = ARMAConv(self.num_classes, activation="softmax")([out_embeddings2, A_week_input])
-
-            out_embeddings3 = ARMAConv(20, activation="elu", gcn_activation="gelu")(
-                [User_embeddings_input, A_weekend_input]
-            )
-            out_embeddings3 = Dropout(self.dropout)(out_embeddings3)
-            out_embeddings3 = ARMAConv(self.num_classes, activation="softmax")([out_embeddings3, A_weekend_input])
-
         out_dense = tf.Variable(2.0) * out_location_location + tf.Variable(2.0) * out_location_time
         out_dense = Dense(self.num_classes, activation="softmax")(out_dense)
 
@@ -112,8 +100,6 @@ class GNNUS_BaseModel:
                 + tf.Variable(1.0) * out_distance
                 + tf.Variable(1.0) * out_duration
                 + tf.Variable(1.0) * out_embeddings
-                + tf.Variable(1.0) * out_embeddings2
-                + tf.Variable(1.0) * out_embeddings3
             )
         else:
             out_gnn = (
