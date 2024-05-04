@@ -45,12 +45,13 @@ def mlflow(ctx):
 
     state = ctx.obj["state"]
     embedder = ctx.obj["embedder"]
-    if embedder != "baseline":
-        h3_resolution = ctx.obj["h3_resolution"]
-        embeddings_dimension = ctx.obj["embeddings_dimension"]
-    else:
+    if embedder is None:
+        embedder = "baseline"
         h3_resolution = 0
         embeddings_dimension = 0
+    else:
+        h3_resolution = ctx.obj["h3_resolution"]
+        embeddings_dimension = ctx.obj["embeddings_dimension"]
     metadata = ctx.obj["metadata"]
     logging.info(f"Starting mlflow execution for {state} state.")
     logging.info(f"MLFlow Params: {embedder} embedder, {h3_resolution} resolution, {embeddings_dimension} dimensions")
