@@ -35,29 +35,22 @@ class PoiCategorizationDomain:
         temporal_matrix_filename,
         distance_matrix_filename=None,
         duration_matrix_filename=None,
-        user_embeddings_filename=None,
     ):
         adjacency_df = self.file_extractor.read_csv(adjacency_matrix_filename).drop_duplicates(subset=["user_id"])
         temporal_matrix_df = self.file_extractor.read_csv(temporal_matrix_filename).drop_duplicates(subset=["user_id"])
-        if (
-            distance_matrix_filename is not None
-            and duration_matrix_filename is not None
-            and user_embeddings_filename is not None
-        ):
+        if distance_matrix_filename is not None and duration_matrix_filename is not None:
             distance_matrix_df = self.file_extractor.read_csv(distance_matrix_filename).drop_duplicates(
                 subset=["user_id"]
             )
             duration_matrix_df = self.file_extractor.read_csv(duration_matrix_filename).drop_duplicates(
                 subset=["user_id"]
             )
-            user_embeddings_df = self.file_extractor.read_csv(user_embeddings_filename).drop_duplicates(
-                subset=["user_id"]
-            )
+
             if adjacency_df["user_id"].tolist() != temporal_matrix_df["user_id"].tolist():
                 logging.error("MATRIZES DIFERENTES")
                 raise
 
-            return (adjacency_df, temporal_matrix_df, distance_matrix_df, duration_matrix_df, user_embeddings_df)
+            return (adjacency_df, temporal_matrix_df, distance_matrix_df, duration_matrix_df)
         else:
             if adjacency_df["user_id"].tolist() != temporal_matrix_df["user_id"].tolist():
                 logging.error("MATRIZES DIFERENTES")
@@ -178,8 +171,6 @@ class PoiCategorizationDomain:
         # location time
         location_time_list = []
         location_location_list = []
-        # region embeddings
-        user_embeddings_list = []
 
         users_categories = []
         maior = -10
@@ -207,7 +198,10 @@ class PoiCategorizationDomain:
         matrix_weekend_df = inputs["weekend"]["adjacency"]["matrices"].tolist()
         temporal_weekend_df = inputs["weekend"]["temporal"]["matrices"].tolist()
         # region embeddings
-        user_embeddings_df = inputs["all_week"]["user_embeddings"]["embeddings"].tolist()
+        baseline = "user_embeddings" not in inputs["all_week"]
+        if not baseline:
+            user_embeddings_list = []
+            user_embeddings_df = inputs["all_week"]["user_embeddings"]["embeddings"].tolist()
 
         selected_visited_locations = []
 
@@ -277,9 +271,10 @@ class PoiCategorizationDomain:
             user_duration_matrix = json.loads(user_duration_matrix)
             user_duration_matrix = np.array(user_duration_matrix)
             """embeddings"""
-            user_embeddings_matrix = user_embeddings_df[i]
-            user_embeddings_matrix = json.loads(user_embeddings_matrix)
-            user_embeddings_matrix = np.array(user_embeddings_matrix)
+            if not baseline:
+                user_embeddings_matrix = user_embeddings_df[i]
+                user_embeddings_matrix = json.loads(user_embeddings_matrix)
+                user_embeddings_matrix = np.array(user_embeddings_matrix)
             for i in range(number_of_matrices):
                 idx = idxs[i]
                 matrices_list.append(sk.layers.ARMAConv.preprocess(user_matrices[i]))
@@ -304,8 +299,8 @@ class PoiCategorizationDomain:
                 user_location_location = spektral.layers.ARMAConv.preprocess(user_location_location)
                 location_location_list.append(user_location_location)
                 # embeddings
-                # user_embeddings_list.append(user_embeddings_matrix[idx[:, None], idx])
-                user_embeddings_list.append(user_embeddings_matrix[idx])
+                if not baseline:
+                    user_embeddings_list.append(user_embeddings_matrix[idx])
                 for j in user_visited[idx]:
                     selected_visited_locations.append(j)
                     selected_users.append(user_id)
@@ -333,7 +328,7 @@ class PoiCategorizationDomain:
         temporal_matrices_week_list = np.array(temporal_matrices_week_list)
 
         # embeddings
-        user_embeddings_list = np.array(user_embeddings_list)
+        user_embeddings_list = np.array(user_embeddings_list) if not baseline else []
 
         return (
             users_categories,
@@ -356,12 +351,14 @@ class PoiCategorizationDomain:
         adjacency_list = inputs[week_type]["adjacency"]
         temporal_list = inputs[week_type]["temporal"]
         user_categories = inputs[week_type]["categories"]
+        baseline = "user_embeddings" not in inputs[week_type]
         if model_name == "poi_gnn" and week_type == "all_week":
             distance_list = inputs[week_type]["distance"]
             duration_list = inputs[week_type]["duration"]
             location_time = inputs[week_type]["location_time"]
             location_location_list = inputs[week_type]["location_location"]
-            user_embeddings_list = inputs[week_type]["user_embeddings"]
+            if not baseline:
+                user_embeddings_list = inputs[week_type]["user_embeddings"]
         else:
             distance_list = []
             duration_list = []
