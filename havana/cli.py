@@ -72,8 +72,9 @@ def model(ctx):
         embedder = "baseline"
         embeddings_dimension = 0
         h3_resolution = 0
-    embeddings_dimension = ctx.obj["embeddings_dimension"]
-    h3_resolution = ctx.obj["h3_resolution"]
+    else:
+        embeddings_dimension = ctx.obj["embeddings_dimension"]
+        h3_resolution = ctx.obj["h3_resolution"]
     logging.info(f"Starting model execution for {state} state")
     execution_model_message = (
         "Executing baseline version" if (embedder == "baseline") else "Executing embeddings version"
@@ -83,8 +84,8 @@ def model(ctx):
     PoiCategorizationJob().run(
         state=state,
         embedder=embedder,
-        embeddings_dimension=None if (embedder == "baseline") else embeddings_dimension,
-        h3_resolution=None if (embedder == "baseline") else h3_resolution,
+        embeddings_dimension=embeddings_dimension,
+        h3_resolution=h3_resolution,
         metadata=metadata,
     )
 
