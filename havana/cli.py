@@ -75,8 +75,8 @@ def model(ctx):
     PoiCategorizationJob().run(
         state=state,
         embedder=embedder,
-        embeddings_dimension=embeddings_dimension,
-        h3_resolution=h3_resolution,
+        embeddings_dimension=None if (embedder == "baseline") else embeddings_dimension,
+        h3_resolution=None if (embedder == "baseline") else h3_resolution,
         metadata=metadata,
     )
 
