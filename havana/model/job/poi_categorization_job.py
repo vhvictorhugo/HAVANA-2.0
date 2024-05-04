@@ -205,9 +205,11 @@ class PoiCategorizationJob:
             "loss": "categorical_crossentropy",
             "learning_rate": 0.001,
             "state": state,
-            "embeddings_dimension": embeddings_dimension,
             "baseline": (embedder == "baseline"),
         }
+
+        if embedder != "baseline":
+            params["embeddings_dimension"] = embeddings_dimension
 
         (
             folds_histories,

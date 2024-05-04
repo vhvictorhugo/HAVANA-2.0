@@ -357,8 +357,7 @@ class PoiCategorizationDomain:
             duration_list = inputs[week_type]["duration"]
             location_time = inputs[week_type]["location_time"]
             location_location_list = inputs[week_type]["location_location"]
-            if not baseline:
-                user_embeddings_list = inputs[week_type]["user_embeddings"]
+            user_embeddings_list = inputs[week_type]["user_embeddings"] if not baseline else []
         else:
             distance_list = []
             duration_list = []
@@ -416,12 +415,14 @@ class PoiCategorizationDomain:
 
         temporal_list_train = temporal_list[train_indexes]
 
+        baseline = len(user_embeddings_list) == 0
+
         if len(distance_list) > 0:
             distance_list_train = distance_list[train_indexes]
             duration_list_train = duration_list[train_indexes]
             location_time_list_train = location_time_list[train_indexes]
             location_location_list_train = location_location_list[train_indexes]
-            user_embeddings_list_train = user_embeddings_list[train_indexes]
+            user_embeddings_list_train = user_embeddings_list[train_indexes] if not baseline else []
         else:
             distance_list_train = []
             duration_list_train = []
@@ -438,7 +439,7 @@ class PoiCategorizationDomain:
             duration_list_test = duration_list[test_indexes]
             location_time_list_test = location_time_list[test_indexes]
             location_location_list_test = location_location_list[test_indexes]
-            user_embeddings_list_test = user_embeddings_list[test_indexes]
+            user_embeddings_list_test = user_embeddings_list[test_indexes] if not baseline else []
         else:
             distance_list_test = []
             duration_list_test = []
