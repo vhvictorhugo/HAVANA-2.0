@@ -67,6 +67,8 @@ def model(ctx):
     state = ctx.obj["state"]
     metadata = ctx.obj["metadata"]
     embedder = ctx.obj["embedder"]
+    if embedder is None:
+        embedder = "baseline"
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     h3_resolution = ctx.obj["h3_resolution"]
     logging.info(f"Starting model execution for {state} state")
