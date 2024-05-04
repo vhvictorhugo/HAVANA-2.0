@@ -70,6 +70,8 @@ def model(ctx):
     embedder = ctx.obj["embedder"]
     if embedder is None:
         embedder = "baseline"
+        embeddings_dimension = 0
+        h3_resolution = 0
     embeddings_dimension = ctx.obj["embeddings_dimension"]
     h3_resolution = ctx.obj["h3_resolution"]
     logging.info(f"Starting model execution for {state} state")
