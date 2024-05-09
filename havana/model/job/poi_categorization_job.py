@@ -33,7 +33,7 @@ class PoiCategorizationJob:
         int_to_locationid_filename = folder + "int_to_locationid_7_categories_US.csv"
         # region embeddings
         # TODO: tirar o hardcode do embedder, o ideal é não ler esse arquivo caso a execução seja baseline
-        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(embedder="hex2vec", state=state)
+        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(embedder=embedder, state=state)
         user_embeddings_filename = (
             user_embeddings_filename + f"{embeddings_dimension}_dimension_{h3_resolution}_resolution.csv"
         )
