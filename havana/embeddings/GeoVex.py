@@ -79,7 +79,7 @@ class GeoVex(Embedder):
             batch_size=10,
             neighbourhood_radius=k_ring_buffer_radius,
             convolutional_layers=2,
-            embedding_size=50,
+            embedding_size=self.embeddings_dimension,
         )
 
         logging.info("Fitting embeddings")
@@ -94,9 +94,7 @@ class GeoVex(Embedder):
                 trainer_kwargs={
                     # "max_epochs": 20, # uncomment for a longer training
                     "max_epochs": 5,
-                    "accelerator": (
-                        "cpu" if torch.backends.mps.is_available() else "auto"
-                    ),  # GeoVexEmbedder does not support MPS
+                    "accelerator": ("cpu" if torch.backends.mps.is_available() else "auto"),
                 },
                 learning_rate=0.001,
             )
