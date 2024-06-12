@@ -1,10 +1,10 @@
 site_name: havana
-repo_url: https://github.com/vhvictorhugo/havana
+repo_url: https://github.com/vhvictorhugo/HAVANA-2.0
 site_url: https://vhvictorhugo.github.io/havana
 site_description: This is a repository for registry the advanced of including some region embeddings into HAVANA, a graph neural network responsable to classifier semantically points of interests.
 site_author: Victor Hugo Santos
 edit_uri: edit/main/docs/
-repo_name: vhvictorhugo/havana
+repo_name: vhvictorhugo/HAVANA-2.0
 copyright: Maintained by <a href="https://vhvictorhugo.com">Florian</a>.
 
 nav:
@@ -15,9 +15,9 @@ plugins:
   - mkdocstrings:
       handlers:
         python:
-            setup_commands:
-                - import sys
-                - sys.path.append('../')
+          setup_commands:
+            - import sys
+            - sys.path.append('../')
 theme:
   name: material
   feature:
@@ -43,7 +43,7 @@ theme:
 extra:
   social:
     - icon: fontawesome/brands/github
-      link: https://github.com/vhvictorhugo/havana
+      link: https://github.com/vhvictorhugo/HAVANA-2.0
     - icon: fontawesome/brands/python
       link: https://pypi.org/project/havana
 

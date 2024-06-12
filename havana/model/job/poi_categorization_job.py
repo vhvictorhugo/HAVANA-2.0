@@ -31,12 +31,6 @@ class PoiCategorizationJob:
         location_location_filename = folder + "location_location_pmi_matrix_7_categories_US.npz"
         location_time_filename = folder + "location_time_pmi_matrix_7_categories_US.csv"
         int_to_locationid_filename = folder + "int_to_locationid_7_categories_US.csv"
-        # region embeddings
-        # TODO: tirar o hardcode do embedder, o ideal é não ler esse arquivo caso a execução seja baseline
-        user_embeddings_filename = metadata["processed"]["user_embeddings"].format(embedder=embedder, state=state)
-        user_embeddings_filename = (
-            user_embeddings_filename + f"{embeddings_dimension}_dimension_{h3_resolution}_resolution.csv"
-        )
 
         max_size_matrices = self.poi_categorization_configuration.MAX_SIZE_MATRICES[1]
         max_size_paths = self.poi_categorization_configuration.MINIMUM_RECORDS[1]
@@ -52,14 +46,21 @@ class PoiCategorizationJob:
             temporal_df,
             distance_df,
             duration_df,
-            user_embeddings_df,
         ) = self.poi_categorization_domain.read_matrix(
             adjacency_matrix_filename,
             temporal_matrix_filename,
             distance_matrix_filename,
             duration_matrix_filename,
-            user_embeddings_filename,
         )
+        # region embeddings matrices
+        if embedder != "baseline":
+            user_embeddings_filename = metadata["processed"]["user_embeddings"].format(embedder=embedder, state=state)
+            user_embeddings_filename = (
+                user_embeddings_filename + f"{embeddings_dimension}_dimension_{h3_resolution}_resolution.csv"
+            )
+            user_embeddings_df = self.file_extractor.read_csv(user_embeddings_filename).drop_duplicates(
+                subset=["user_id"]
+            )
         # week matrices
         adjacency_week_df, temporal_week_df = self.poi_categorization_domain.read_matrix(
             adjacency_matrix_week_filename, temporal_matrix_week_filename
@@ -68,20 +69,23 @@ class PoiCategorizationJob:
         adjacency_weekend_df, temporal_weekend_df = self.poi_categorization_domain.read_matrix(
             adjacency_matrix_weekend_filename, temporal_matrix_weekend_filename
         )
+
+        matrices_to_verify = [
+            adjacency_df,
+            temporal_df,
+            adjacency_week_df,
+            temporal_week_df,
+            adjacency_weekend_df,
+            temporal_weekend_df,
+            distance_df,
+            duration_df,
+        ]
+
+        if embedder != "baseline":
+            matrices_to_verify.append(user_embeddings_df)
+
         logging.info("Verificação de matrizes")
-        self.matrices_verification(
-            [
-                adjacency_df,
-                temporal_df,
-                adjacency_week_df,
-                temporal_week_df,
-                adjacency_weekend_df,
-                temporal_weekend_df,
-                distance_df,
-                duration_df,
-                user_embeddings_df,
-            ]
-        )
+        self.matrices_verification(matrices_to_verify)
         logging.info("Matrizes Verificadas com Sucesso!")
 
         location_location = self.file_extractor.read_npz(location_location_filename)
@@ -96,11 +100,13 @@ class PoiCategorizationJob:
                 "location_location": location_location,
                 "location_time": location_time,
                 "int_to_locationid": int_to_locationid,
-                "user_embeddings": user_embeddings_df,
             },
             "week": {"adjacency": adjacency_week_df, "temporal": temporal_week_df},
             "weekend": {"adjacency": adjacency_weekend_df, "temporal": temporal_weekend_df},
         }
+
+        if embedder != "baseline":
+            inputs["all_week"]["user_embeddings"] = user_embeddings_df
 
         (
             users_categories,
@@ -123,18 +129,18 @@ class PoiCategorizationJob:
 
         selected_users = pd.DataFrame({"selected_users": selected_users})
 
-        self.matrices_verification(
-            [
-                adjacency_df,
-                temporal_df,
-                adjacency_week_df,
-                temporal_week_df,
-                adjacency_weekend_df,
-                temporal_weekend_df,
-                distance_df,
-                user_embeddings_df,
-            ]
-        )
+        matrices_to_verify = [
+            adjacency_df,
+            temporal_df,
+            adjacency_week_df,
+            temporal_week_df,
+            adjacency_weekend_df,
+            temporal_weekend_df,
+            distance_df,
+        ]
+        if embedder != "baseline":
+            matrices_to_verify.append(user_embeddings_df)
+        self.matrices_verification(matrices_to_verify)
 
         inputs = {
             "all_week": {
@@ -145,7 +151,6 @@ class PoiCategorizationJob:
                 "categories": users_categories,
                 "distance": distance_df,
                 "duration": duration_df,
-                "user_embeddings": user_embeddings_df,
             },
             "week": {"adjacency": adjacency_week_df, "temporal": temporal_week_df, "categories": users_categories},
             "weekend": {
@@ -154,6 +159,9 @@ class PoiCategorizationJob:
                 "categories": users_categories,
             },
         }
+
+        if embedder != "baseline":
+            inputs["all_week"]["user_embeddings"] = user_embeddings_df
 
         usuarios = len(adjacency_df)
 
@@ -197,9 +205,11 @@ class PoiCategorizationJob:
             "loss": "categorical_crossentropy",
             "learning_rate": 0.001,
             "state": state,
-            "embeddings_dimension": embeddings_dimension,
             "baseline": (embedder == "baseline"),
         }
+
+        if embedder != "baseline":
+            params["embeddings_dimension"] = embeddings_dimension
 
         (
             folds_histories,

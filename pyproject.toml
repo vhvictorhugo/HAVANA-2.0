@@ -3,7 +3,7 @@ name = "havana"
 version = "0.0.1"
 description = "This is a repository for registry the advanced of including some region embeddings into HAVANA, a graph neural network responsable to classifier semantically points of interests."
 authors = ["Victor Hugo Santos <fvictor.h.santos@ufv.br>"]
-repository = "https://github.com/vhvictorhugo/havana"
+repository = "https://github.com/vhvictorhugo/HAVANA-2.0"
 documentation = "https://vhvictorhugo.github.io/havana/"
 readme = "README.md"
 packages = [
@@ -14,7 +14,7 @@ packages = [
 havana = "havana.cli:main"
 
 [tool.poetry.dependencies]
-python = "3.10.14"
+python = "~3.10"
 click = "^8.1.7"
 srai = {extras = ["osm"], version = "^0.7.0"}
 ipykernel = "^6.29.3"
