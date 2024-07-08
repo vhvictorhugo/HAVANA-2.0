@@ -170,7 +170,6 @@ cython_debug/
 *.parquet
 *.csv
 *.xls
-cache/
 *.xml
 *.shx
 *.shp
@@ -183,4 +182,6 @@ cache/
 mlruns/
 
 # SRAI
+cache/
 lightning_logs/
+files/

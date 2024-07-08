@@ -1,6 +1,6 @@
 {
     "raw": {
-        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/checkins_local/checkins_local_{state}.csv",
+        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/checkins_separated_categories/checkins_{state}.csv",
         "from_to_category_names": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/general/category_names.csv"
     },
     "intermediate": {
