@@ -178,6 +178,8 @@ cache/
 *.dbf
 *.cpg
 *.npz
+*.pbf
+files/
 
 # MLFlow
 mlruns/
