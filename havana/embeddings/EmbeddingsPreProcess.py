@@ -82,7 +82,8 @@ class EmbeddingsPreProcess:
         """
         dicionario = {}
         for i in range(n):
-            chave = i
+            chave = str(i)
+            # chave = i
             valor = "feature_" + str(i + 1)
             dicionario[chave] = valor
         return dicionario

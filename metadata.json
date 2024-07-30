@@ -1,16 +1,16 @@
 {
     "raw": {
-        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/checkins_local/checkins_local_{state}.csv",
-        "from_to_category_names": "/home/victor-hugo/Documentos/HAVANA-2.0/data/raw/general/category_names.csv"
+        "checkins": "/home/victor-hugo/HAVANA-2.0/data/raw/checkins_separated_categories/checkins_{state}.csv",
+        "from_to_category_names": "/home/victor-hugo/HAVANA-2.0/data/raw/general/category_names.csv"
     },
     "intermediate": {
-        "checkins": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/checkins/",
-        "embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}/"
+        "checkins": "/home/victor-hugo/HAVANA-2.0/data/intermediate/checkins/",
+        "embeddings": "/home/victor-hugo/HAVANA-2.0/data/intermediate/region_embeddings/{embedder}/{state}/"
     },
     "processed": {
-        "user_embeddings": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/user_embeddings/{embedder}/{state}/",
-        "gowalla": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/gowalla/{state}/",
-        "selected_users": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/selected_users/",
-        "metrics": "/home/victor-hugo/Documentos/HAVANA-2.0/data/processed/metrics/{embedder}/{state}/"
+        "user_embeddings": "/home/victor-hugo/HAVANA-2.0/data/processed/user_embeddings/{embedder}/{state}/",
+        "gowalla": "/home/victor-hugo/HAVANA-2.0/data/processed/gowalla/{state}/",
+        "selected_users": "/home/victor-hugo/HAVANA-2.0/data/processed/selected_users/",
+        "metrics": "/home/victor-hugo/HAVANA-2.0/data/processed/metrics/{embedder}/{state}/"
     }
 }
